@@ -17,45 +17,63 @@ const addFlightController = async(req,res) => {
 
 // ----------------------------get Flights with filter ------------------------------------
 
-const getFlightController = async(req,res) => {
-    try{
-        const {departureCity,arrivalCity,date,minPrice,maxPrice} = req.query;
 
-        if (req.path === "/flight/get"){
-            const flight = await flightModel.find();
-            //res.json({totalFlights:flight.length,flight})
-        }
+const getFlightController = async (req, res) => {
+    try {
+        const { departureCity, arrivalCity, date, minPrice, maxPrice } = req.query;
+
+        // Initialize empty filter
         let filter = {};
 
-        if(departureCity) filter.departureCity = departureCity;
-        if(arrivalCity) filter.arrivalCity = arrivalCity;
-        
-        if(date){
+        // If no filters are applied, return all flights (avoiding duplicate responses)
+        if (req.path === "/get" && Object.keys(req.query).length === 0) {
+            const allFlights = await flightModel.find();
+            return res.json({ totalFlights: allFlights.length, flights: allFlights });
+        }
+
+        // Apply filters dynamically
+        if (departureCity) filter.departureCity = departureCity;
+        if (arrivalCity) filter.arrivalCity = arrivalCity;
+
+        // Handle date filtering
+        if (date) {
             const start = new Date(date);
             const end = new Date(date);
             end.setHours(23, 59, 59, 999);
-            filter.dipartureTime = {$gte: start , $lte: end};
+            filter.departureTime = { $gte: start, $lte: end }; 
         }
 
-        if(minPrice) filter.price = {...filter.price ,$gte:minPrice}
-        if(maxPrice) filter.price = {...filter.price ,$lte:maxPrice}
+        // Handle price range filtering
+        if (minPrice || maxPrice) {
+            filter.price = {};
+            if (minPrice) filter.price.$gte = Number(minPrice);
+            if (maxPrice) filter.price.$lte = Number(maxPrice);
+        }
 
-        const flights = await flightModel.find(filter)
-        res.status(200).json(flights)
+        // Fetch filtered flights
+        const flights = await flightModel.find(filter);
 
+        // Send response once
+        res.status(200).json({ totalFlights: flights.length, flights });
+    } 
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Error in get flight API", error });
     }
-    catch(error){
-        console.log(error)
-        res.status(500).json({Message:"Error in get flight  Api....",error})
-    }
-}
+};
+
 
 
 // ------------------------------- get flight by id--------------------------------
 
 const getFlightByIdController = async(req,res) => {
     try{
-        
+
+        const flight = await flightModel.findById(req.params.id)
+        if(!flight)
+            return res.status(500).json({Message:"Flight not found"})
+
+        res.status(200).json(flight)
     }
     catch(error){
         console.log(error)
@@ -68,8 +86,13 @@ const getFlightByIdController = async(req,res) => {
 
 const updateFlightController = async(req,res) => {
     try{
+        const flight = await flightModel.findByIdAndUpdate(req.params.id , req.body ,{new:true})
+        if(!flight)
+            return res.status(500).json({message:"Flight not found"})
 
+        res.status(200).json(flight)
     }
+
     catch(error){
         console.log(error)
         res.status(500).json({Message:"Error in Add Flight  Api....",error})
@@ -81,7 +104,10 @@ const updateFlightController = async(req,res) => {
 
 const deleteFlightController = async(req,res) => {
     try{
-
+        const flight = await flightModel.findByIdAndDelete(req.params.id)
+        if(!flight)
+            return res.status(500).json({message:"Flight not found"})
+        res.status(200).json(flight)
     }
     catch(error){
         console.log(error)

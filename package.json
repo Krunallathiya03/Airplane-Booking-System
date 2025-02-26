@@ -4,7 +4,7 @@
   "description": "",
   "main": "Server.js",
   "scripts": {
-    "start":"nodemon Server.js",
+    "start": "nodemon Server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Krunal Lathiya",
@@ -15,6 +15,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
+    "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9"
   }
 }

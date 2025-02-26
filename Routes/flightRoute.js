@@ -14,17 +14,17 @@ const route = express.Router();
 // Add flights   Admin only
 route.post("/add",verifyToken,admin,addFlightController)
 
-//get Flihght
+//get Flight
 route.get("/get",getFlightController)
 
 //get Flight by id
 route.get("/get/:id",getFlightByIdController)
 
 //update flight   //admin only
-route.put("/update/:id",updateFlightController)
+route.put("/update/:id",verifyToken,admin,updateFlightController)
 
 //detale flight  //admin only
-route.delete("/delete/:id",deleteFlightController)
+route.delete("/delete/:id",verifyToken,admin,deleteFlightController)
 
 
 

@@ -17,7 +17,7 @@ connectDB();
 //routes
 app.use("/auth",require("./Routes/authRoute"));
 app.use("/flight",require("./Routes/flightRoute"));
-
+app.use("/booking",require("./Routes/bookingRoute"));
 
 
 
