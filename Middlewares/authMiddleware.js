@@ -4,15 +4,30 @@ const userModel = require("../Models/userModel");
 
 const verifyToken = (req,res,next) =>{
     try{
-        const token = req.headers["authorization"].split(" ")[1]
-        jwt.verify(token,process.env.TOKEN,(err,decode)=>{
+
+        const authHeader = req.headers["authorization"]
+
+         // Check if Authorization header exists
+         if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ message: "Unauthorized: Token required" });
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        jwt.verify(token,process.env.TOKEN,(err,decoded)=>{
+           // console.log(decoded);
+            
             if(err){
-                return res.status(401).json({Message:"Unauthorised User"})
+                return res.status(401).json({Message:"Unauthorised: Invalid token"})
             }
-            else{
-                req.user = decode
+            if(!decoded || !decoded.id){
+                return res.status(401).json({message: "Unauthorized: Invalid token payload"})
+            }
+                //console.log(token);
+                
+                req.user = decoded;
                 next();
-            }
+            
         })
     }
     catch(error){

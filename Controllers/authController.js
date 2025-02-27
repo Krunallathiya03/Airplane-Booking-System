@@ -58,7 +58,9 @@ const loginController = async(req,res) => {
         }
 
         //token
-        const token = jwt.sign({role:user.role, email:user.email},process.env.TOKEN)
+        const token = jwt.sign({ id: user._id,role:user.role, email:user.email},process.env.TOKEN)
+        //console.log(user);
+        
 
         res.status(200).send({message:"login sucessfully....",token,user})
     }

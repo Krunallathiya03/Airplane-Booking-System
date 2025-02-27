@@ -13,12 +13,12 @@ const bookingController = async (req,res) =>{
         if(flight.seatsAvailable < seats)
             return res.status(400).json({message:"Not enough seats available"})
 
-        let PricePerSeat = flight.price
+        let pricePerSeat = flight.price
         if(flight.seatsAvailable <= 10)
-            PricePerSeat *= 1.05  //incress by 5%   
+            pricePerSeat *= 1.05  //incress by 5%   
 
-        const totalAmount = PricePerSeat*seats;
-        console.log(req)
+        const totalAmount = pricePerSeat*seats;
+       // console.log(req.user)
         const booking = await bookingModel.create({
             user:req.user.id,
             flight:flightId,
@@ -43,7 +43,8 @@ const bookingController = async (req,res) =>{
 // -------------------------------Get User Bookings---------------------------------------
 const getTicketControllr = async (req,res) =>{
     try{
-
+        const bookings = await bookingModel.find({user:req.user.id}).populate("flight");
+        res.status(200).json({totalBookings:bookings.length,bookings});
     }
     catch(error){
         console.log(error)
@@ -55,7 +56,32 @@ const getTicketControllr = async (req,res) =>{
 
 const cancleBookingController = async (req,res) =>{
     try{
+        
+        const bookingId = req.params.id
+        if(!bookingId)
+            return res.status(404).json({message:"Booking id require..."})
 
+        const booking = await bookingModel.findById(bookingId)
+        if(!booking)
+            return res.status(404).json({message:"Booking not found..."})
+
+        const flight = await flightModel.findById(booking.flight);
+        if (!flight) {
+            return res.status(404).json({ message: "Flight not found" });
+          }
+
+
+        booking.status = "Cancelled"
+        booking.paymentStatus = "Refund"
+
+        flight.seatsAvailable += booking.seats
+
+        await booking.save();
+        await flight.save();
+
+        await booking.save();
+
+        res.status(200).json({Message:"Booking Cancle",booking})
     }
     catch(error){
         console.log(error)

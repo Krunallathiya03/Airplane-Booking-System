@@ -11,12 +11,13 @@ const route = express.Router();
 route.post("/",verifyToken,bookingController)
 
 //get user's booking
-route.get("/get",getTicketControllr)
+route.get("/get",verifyToken,getTicketControllr)
 
 //cancle Booking
-route.delete("/delete/:id",cancleBookingController)
+route.delete("/delete/:id",verifyToken,cancleBookingController)
 
 //generate E-Ticket
+
 
 
 module.exports = route;
