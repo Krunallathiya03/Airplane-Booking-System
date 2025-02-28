@@ -1,5 +1,7 @@
 const bookingModel = require("../Models/bookingModel");
-const flightModel = require("../Models/flightModel")
+const flightModel = require("../Models/flightModel");
+const { sendBookingEmail } = require("../Utils/emailServices");
+const { generateTicketPdf } = require("../Utils/pdfGenerate");
 
 // ------------------------------Book Flight Ticket -----------------------------------
 const bookingController = async (req,res) =>{
@@ -29,6 +31,9 @@ const bookingController = async (req,res) =>{
 
         flight.seatsAvailable -= seats;
         await flight.save();
+
+        //send Booking confirmation email
+        sendBookingEmail(req.user.email,booking._id,flight);
 
         res.status(201).json({message:"Booking Sucessfully....",booking})
 
@@ -89,9 +94,26 @@ const cancleBookingController = async (req,res) =>{
     }
 }
 
+const generateETicketController = async (req,res) =>{
+    try{
+        const booking = await bookingModel.findById(req.params.id).populate("flight user")
+        if(!booking)
+            return res.status(400).json({message:"Booking not found.."})
+
+        const pdfPath = await generateTicketPdf(booking)
+        res.download(pdfPath);
+    }
+    
+    catch(error){
+        console.log(error)
+        res.status(500).json({Message:"Error in generate e-ticket  Api....",error})
+    }
+}
+
 
 module.exports = {bookingController,
                   getTicketControllr,
-                  cancleBookingController
+                  cancleBookingController,
+                  generateETicketController
 }
 

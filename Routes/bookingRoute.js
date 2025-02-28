@@ -1,7 +1,8 @@
 const express = require("express");
 const { bookingController, 
         getTicketControllr, 
-        cancleBookingController } = require("../Controllers/bookingController");
+        cancleBookingController, 
+        generateETicketController} = require("../Controllers/bookingController");
 const { verifyToken} = require("../Middlewares/authMiddleware");
 
 const route = express.Router();
@@ -17,7 +18,7 @@ route.get("/get",verifyToken,getTicketControllr)
 route.delete("/delete/:id",verifyToken,cancleBookingController)
 
 //generate E-Ticket
-
+route.get("/:id/ticket",verifyToken,generateETicketController)
 
 
 module.exports = route;
