@@ -10,18 +10,18 @@ const {
 const route = express.Router();
 
 //get all user
-route.get = ("/", getAllUserController);
+route.get("/get", getAllUserController);
 
 //get user by id
-route.get = ("/get/:id", getUserByIdController);
+route.get("/get/:id", getUserByIdController);
 
 //update user
-route.put = ("/:id", updateUserController);
+route.put("/:id", updateUserController);
 
 //update password
-route.post = ("/update/:id", updatePasswordController);
+route.post("/update/:id", updatePasswordController);
 
 //delete user
-route.delete = ("/delete/:id", deleteUserController);
+route.delete("/delete/:id", deleteUserController);
 
 module.exports = route;

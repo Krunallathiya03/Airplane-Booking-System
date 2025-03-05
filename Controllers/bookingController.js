@@ -33,7 +33,16 @@ const bookingController = async (req, res) => {
     await flight.save();
 
     //send Booking confirmation email
-    sendBookingEmail(req.user.email, booking, flight);
+    //sendBookingEmail(req.user.email, booking, flight);
+    // for (let i = 0; i < 20; i++) {
+    //   await sendBookingEmail(req.user.email, booking, flight);
+    //   console.log(`Email sent ${i + 1} times`);
+    // }
+    const emailPromises = Array.from({ length:1}, () =>
+      sendBookingEmail(req.user.email, booking, flight)
+    );
+
+    await Promise.all(emailPromises);
 
     res.status(201).json({ message: "Booking Sucessfully....", booking });
   } catch (error) {
