@@ -2,7 +2,7 @@ const bookingModel = require("../Models/bookingModel");
 const flightModel = require("../Models/flightModel");
 const userModel = require("../Models/userModel");
 
-const getAnalytics = async(req,res) => {
+const getAnalyticsController = async(req,res) => {
     try{
       // ---------------------------Total Revenue-------------------------------
 
@@ -79,4 +79,4 @@ const getAnalytics = async(req,res) => {
     }
 }
 
-module.expoerts = {getAnalytics}
+module.exports = {getAnalyticsController}

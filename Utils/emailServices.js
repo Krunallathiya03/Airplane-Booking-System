@@ -1,4 +1,8 @@
 const nodemailer = require("nodemailer");
+const express = require("express");
+
+const app = express();
+app.use(express.json());
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -51,4 +55,27 @@ const sendBookingEmail = async (email, booking, flight) => {
   }
 };
 
-module.exports = { sendBookingEmail };
+// ---------------------------send otp --------------------------------------
+
+const sendOtp = async(email,otp) =>{
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject:"Your Admin Login Otp",
+      text:`Your One-Time Password (OTP) is: ${otp}. This OTP is valid for 5 minutes.`,
+    };
+
+   
+    try{
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent Successfully to ${email}`);
+    }
+  
+  catch(error){
+    console.log("Error sending email:", error);
+    
+  }
+}
+
+module.exports = { sendBookingEmail ,sendOtp };

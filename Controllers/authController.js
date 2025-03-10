@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../Models/userModel");
+const { sendOtp } = require("../Utils/emailServices");
 
 // ----------------------------------------Register--------------------------------------
 
@@ -43,7 +44,7 @@ const loginController = async (req, res) => {
     //check user
     const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(404).send({ message: "User not found..." });
+      return res.status(404).send({ message: "user not found" });
     }
 
     //compare password
@@ -53,11 +54,24 @@ const loginController = async (req, res) => {
       return res.status(400).send({ message: "Your password is not matched" });
     }
 
+    //generate otp
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    user.otp = otp;
+    user.otpExpires = Date.now() + 5 * 60 * 1000;
+    await user.save();
+
+    if (user?.role === "admin") {
+      await sendOtp(user.email, otp);
+    }
+
     //token
-    const token = jwt.sign(
-      { id: user._id, role: user.role, email: user.email },
-      process.env.TOKEN
-    );
+    let token;
+    if (user?.role === "user") {
+      token = jwt.sign(
+        { id: user._id, role: user.role, email: user.email },
+        process.env.TOKEN
+      );
+    }
     //console.log(user);
 
     res.status(200).send({ message: "login sucessfully....", token, user });
@@ -67,4 +81,40 @@ const loginController = async (req, res) => {
   }
 };
 
-module.exports = { registerController, loginController };
+// --------------------------------------------verify admin otp----------------------------------
+const verifyAdminOtp = async (req, res) => {
+  try {
+    const { adminId, otp } = req.body;
+    const user = await userModel.findById(adminId);
+
+    if (!user || user.role != "admin") {
+      return res.status(404).send({ message: "Admin access only..." });
+    }
+
+    // check if otp is valid
+    if (user.otp != otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ Message: " Invalid or expired otp" });
+    }
+
+    //generate token
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.TOKEN
+    );
+
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Admin Login sucessfully...", token, user });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Error in verify Admin Otp API....", error });
+  }
+};
+
+module.exports = { registerController, loginController, verifyAdminOtp };
